@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'main.dart'; // Import to navigate to NotesHomePage
 
@@ -41,6 +42,9 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200 && data['success'] == true) {
         // Login successful
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+
         if (mounted) {
           Navigator.pushReplacement(
             context,

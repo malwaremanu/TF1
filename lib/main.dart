@@ -3,12 +3,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'login_page.dart';
 
-void main() {
-  runApp(const NotesApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  runApp(NotesApp(isLoggedIn: isLoggedIn));
 }
 
 class NotesApp extends StatelessWidget {
-  const NotesApp({super.key});
+  final bool isLoggedIn;
+  const NotesApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,7 @@ class NotesApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const LoginPage(),
+      home: isLoggedIn ? const NotesHomePage() : const LoginPage(),
     );
   }
 }
@@ -142,12 +146,29 @@ class _NotesHomePageState extends State<NotesHomePage> {
     );
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Notes'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: notes.isEmpty
           ? Center(
